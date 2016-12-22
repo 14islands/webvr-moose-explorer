@@ -1,22 +1,35 @@
+import 'whatwg-fetch'
 import * as THREE from 'three'
 import query from './utils/query'
+import Ground from './ground'
+import Treeline from './treeline'
+import Moose from './moose'
 import Snowfall from './snowfall'
+import Torch from './torch'
+import Hand from './hand'
 
 // load shimmed plugins - access on THREE namespace
-import _OBJLoader from 'OBJLoader'
-import _VRControls from 'VRControls'
-import _VREffect from 'VREffect'
-import _ViveController from 'ViveController'
+import _OBJLoader from 'OBJLoader' // eslint-disable-line no-unused-vars
+import _VRControls from 'VRControls' // eslint-disable-line no-unused-vars
+import _VREffect from 'VREffect' // eslint-disable-line no-unused-vars
+import _ViveController from 'ViveController' // eslint-disable-line no-unused-vars
 
 // Import WebVRManager npm module
 import WebVRManager from 'webvr-boilerplate'
 
 const clock = new THREE.Clock()
+const jsonLoader = new THREE.JSONLoader()
+const objectLoader = new THREE.ObjectLoader()
+
+// user objects that need update on each frame
+const updateObjects = []
 
 let scene, camera, HEIGHT, WIDTH, renderer, container
 let vrControls, vrEffect, vrManager, vrDisplay
 let viveController1, viveController2
-let snowfall
+
+let ground // eslint-disable-line no-unused-vars
+let treeline // eslint-disable-line no-unused-vars
 
 function createScene () {
   HEIGHT = window.innerHeight
@@ -80,7 +93,7 @@ function handleWindowResize () {
 function createLights () {
   // A directional light shines from a specific direction.
   // It acts like the sun, that means that all the rays produced are parallel.
-  const shadowLight = new THREE.DirectionalLight(0xffffff, 0.8)
+  const shadowLight = new THREE.DirectionalLight(0xffffff, 0.1)
 
   // Set the direction of the light
   shadowLight.position.set(1, 2, -1)
@@ -108,16 +121,46 @@ function createLights () {
   shadowLight.shadow.mapSize.height = 1024 * 2
 
   // an ambient light modifies the global color of a scene and makes the shadows softer
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.8)
+  const ambientLight = new THREE.AmbientLight(0xffffff, 1.3)
 
   scene.add(shadowLight)
   scene.add(ambientLight)
 }
 
 function createSnowFall () {
-  snowfall = new Snowfall(200000)
+  const snowfall = new Snowfall(200000)
   snowfall.system.position.set(0, 0, 0)
   scene.add(snowfall.system)
+  return snowfall
+}
+
+function createHands () {
+  if (viveController1) {
+    const handL = new Hand(objectLoader, '/assets/models/hands/handsForOculus/handL.json')
+    viveController1.add(handL)
+    viveController1.addEventListener('triggerdown', () => handL.grip())
+    viveController1.addEventListener('triggerup', () => handL.release())
+    updateObjects.push(handL)
+  }
+
+  if (viveController2) {
+    const handR = new Hand(objectLoader, '/assets/models/hands/handsForOculus/handR.json')
+    viveController2.add(handR)
+    viveController2.addEventListener('triggerdown', () => handR.grip())
+    viveController2.addEventListener('triggerup', () => handR.release())
+    updateObjects.push(handR)
+  }
+
+  // temp: add stuff to hands
+  const torch = new Torch()
+  torch.position.y = 1.5
+  torch.position.z = -1
+  scene.add(torch)
+
+  // window.addEventListener('mousedown', () => torch.on())
+  // window.addEventListener('mouseup', () => torch.off())
+  // viveController1.addEventListener('triggerdown', () => torch.on())
+  // viveController1.addEventListener('triggerup', () => torch.off())
 }
 
 function loop () {
@@ -131,8 +174,9 @@ function loop () {
     viveController2.update()
   }
 
-  if (snowfall) {
-    snowfall.update(delta, elapsed)
+  // update user objects
+  for (let object of updateObjects) {
+    object.update(delta, elapsed)
   }
 
   // Render the scene through the vrManager.
@@ -183,34 +227,21 @@ function initViveControllers () {
 
   viveController1 = new THREE.ViveController(0)
   viveController1.standingMatrix = vrControls.getStandingMatrix()
-  // viveController1.addEventListener('triggerdown', onTriggerDown)
-  // viveController1.addEventListener('triggerup', onTriggerUp)
   scene.add(viveController1)
 
   viveController2 = new THREE.ViveController(1)
   viveController2.standingMatrix = vrControls.getStandingMatrix()
-  // viveController2.addEventListener('triggerdown', onTriggerDown)
-  // viveController2.addEventListener('triggerup', onTriggerUp)
   scene.add(viveController2)
 
-  loadViveControllerModels()
+  // loadViveControllerModels()
 
   if (query.debug) {
     showControllerGuideRays()
   }
 }
 
-function init () {
-  // set up the scene, the camera and the renderer
-  createScene()
-
-  // add the lights
-  createLights()
-
-  // add the objects
-  createSnowFall()
-
-  // // Apply VR headset positional data to camera.
+function initVR () {
+  // Apply VR headset positional data to camera.
   vrControls = new THREE.VRControls(camera)
   vrControls.standing = true
 
@@ -229,12 +260,33 @@ function init () {
   // parameters provided.
   setupStage()
 
+  // init controllers
   initViveControllers()
 
   // Listen to the screen: if the user resizes it
   // we have to update the camera and the renderer size
   window.addEventListener('resize', handleWindowResize, false)
   window.addEventListener('vrdisplaypresentchange', handleWindowResize, true)
+}
+
+function init () {
+  // set up the scene, the camera and the renderer
+  createScene()
+
+  initVR()
+
+  // add the lights
+  createLights()
+
+  // create user objects
+  treeline = new Treeline(scene)
+  ground = new Ground(scene, objectLoader)
+
+  createHands()
+
+  // keep track of objects that need to update
+  updateObjects.push(createSnowFall())
+  updateObjects.push(new Moose(scene, jsonLoader))
 }
 
 // Get the HMD, and if we're dealing with something that specifies

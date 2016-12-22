@@ -59,6 +59,68 @@
     <!-- Our compiled scene -->
 		<script type="text/javascript" src="build/bundle.min.js"/></script>
 
+		<script type="x-shader/x-vertex" id="snowpuff_vs">
+			uniform float height;
+			uniform float elapsedTime;
+			uniform float speed;
+			uniform float radiusX;
+			uniform float radiusZ;
+			uniform float scale;
+			uniform float size;
+			attribute vec3 velocity;
+			attribute float uniqueness;
+
+			varying vec2 vUv;
+	    varying vec3 vPosition;
+	    void main( void ) {
+	      vUv = uv;
+	      vPosition = position;
+
+				// make time loop
+				float time = mod(elapsedTime, 1.0);
+				//
+				vec3 gravity = vec3(0, 1, 0) * time * speed * 0.4;
+				// todo make vec3(0, 0, -0.5) uniform direction variable
+				vec3 direction = (velocity + vec3(0, 0, -0.5)) * time * speed * 1.0;
+				vec3 pos = position + direction + pow(gravity, vec3(4.0)) * -1.0;
+				//
+				// vec3 pos = position;
+				vec4 mvPosition = modelViewMatrix * vec4( pos, 1.0 );
+				gl_PointSize = size * ( scale / length( mvPosition.xyz ) );
+				gl_Position = projectionMatrix * modelViewMatrix * vec4( pos, 1.0 );
+			}
+		</script>
+
+		<script id="fogFragmentShader" type="x-shader/x-fragment">
+    varying vec2 vUv;
+
+		uniform vec3 color;
+		uniform float opacity;
+
+    uniform sampler2D texture;
+    uniform vec3 fogColor;
+    uniform float fogNear;
+    uniform float fogFar;
+    uniform float fogDensity;
+    void main() {
+      //gl_FragColor = vec4( color, opacity ) //texture2D(texture, vUv);
+      #ifdef USE_FOG
+          #ifdef USE_LOGDEPTHBUF_EXT
+              float depth = gl_FragDepthEXT / gl_FragCoord.w;
+          #else
+              float depth = gl_FragCoord.z / gl_FragCoord.w;
+          #endif
+					#ifdef FOG_EXP2
+							 float fogFactor = whiteCompliment( exp2( - log2(fogDensity * fogDensity * depth * depth) ) );
+					#else
+							 float fogFactor = smoothstep( fogNear, fogFar, depth );
+					#endif
+          // gl_FragColor.rgb = mix( gl_FragColor.rgb, fogColor, fogFactor );
+					gl_FragColor = vec4( mix( color, fogColor, fogFactor ),  opacity );
+      #endif
+    }
+  </script>
+
 	</head>
 	<body>
 		<div class="world" id="world"></div>

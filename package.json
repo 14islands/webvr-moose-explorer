@@ -46,7 +46,8 @@
     "watchify": "^3.7.0",
     "webfontloader": "^1.6.24",
     "webvr-boilerplate": "0.4.9",
-    "webvr-polyfill": "0.9.3"
+    "webvr-polyfill": "0.9.3",
+    "whatwg-fetch": "^2.0.1"
   },
   "browser": {
     "OBJLoader": "./node_modules/three/examples/js/loaders/OBJLoader.js",

@@ -12,6 +12,7 @@ export default class Snowfall {
     textureLoader.load('/assets/textures/snowflake.png', (texture) => {
       this.texture = texture
       this.system.material.uniforms.texture.value = texture
+      console.log('texture loade', texture)
     })
     this.init()
   }

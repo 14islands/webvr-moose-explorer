@@ -3,21 +3,16 @@ import * as THREE from 'three'
 export default class Snowpuff {
   constructor (scene, offset = 0) {
     this.scene = scene
-    this.numParticles = 10000
+    this.numParticles = 20000
 
-    this.maxHeight = 0.8
-    this.minHeight = 0
-    this.width = 0.5
-    this.depth = 1
-
-    this.speedY = 0.3
-    this.speedX = 0.3
+    this.maxHeight = 1.3
+    this.minHeight = 0.2
     this.offset = offset
 
     var textureLoader = new THREE.TextureLoader()
     textureLoader.load('/assets/textures/snowflake.png', (texture) => {
       this.texture = texture
-      // this.system.material.uniforms.texture.value = texture
+      this.system.material.uniforms.texture.value = texture
     })
     this.init()
   }
@@ -42,9 +37,9 @@ export default class Snowpuff {
         speed: { type: 'f', value: 4 },
         elapsedTime: { type: 'f', value: 0.0 },
         radius: { type: 'f', value: 0.2 },
-        scale: { type: 'f', value: 2.0 },
-        size: { type: 'f', value: 5.0 },
-        opacity: { type: 'f', value: 0.5 },
+        scale: { type: 'f', value: 4.0 },
+        size: { type: 'f', value: 8.0 },
+        opacity: { type: 'f', value: 0.05 },
         fogColor: { type: 'c', value: this.scene.fog.color },
         fogNear: { type: 'f', value: this.scene.fog.near },
         fogFar: { type: 'f', value: this.scene.fog.far },
@@ -89,11 +84,31 @@ export default class Snowpuff {
       },
       // uniforms : uniforms,
       transparent: true,
-      // depthTest: true,
-      // blending: THREE.AdditiveBlending,
-      // alphaTest: 0.2
+      // depthTest: false,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
       // vertexShader : vertexShader,
-      fragmentShader: fragmentShader,
+      // fragmentShader: fragmentShader,
+      fragmentShader: `
+        varying vec2 vUv;
+
+        uniform vec3 color;
+        uniform float opacity;
+
+        uniform sampler2D texture;
+        uniform float fogDensity;
+        ${THREE.ShaderChunk[ "common" ]}
+        ${THREE.ShaderChunk[ "fog_pars_fragment" ]}
+        void main() {
+          vec4 texColor = texture2D( texture, gl_PointCoord );
+          gl_FragColor = texColor * vec4( color, opacity );
+          ${THREE.ShaderChunk['fog_fragment']}
+
+          // addative blending bleeds through fog so let's reduce even more
+          // if ( fogFactor > 0.5 ) gl_FragColor.w *= 0.1;
+          gl_FragColor.w *= mix(1.0, 0.05, fogFactor);
+        }
+      `,
       fog: true,
       vertexShader: document.getElementById('snowpuff_vs').textContent
       // fragmentShader: document.getElementById('snowpuff_fs').textContent,
@@ -137,13 +152,13 @@ export default class Snowpuff {
     for (let i = 0; i < velocity.length; i += 3) {
       const len = Math.random() * this.maxHeight + this.minHeight
       const phi = this.randCenter(Math.PI * 0.66)
-      const theta = this.randCenter(Math.PI * 0.66)
+      const theta = this.randCenter(Math.PI/* * 0.66*/)
       const sphereCoord = THREE.Spherical(len, phi, theta)
 
       const v = new THREE.Vector3()
       v.setFromSpherical(sphereCoord)
       velocity[i] = v.x
-      velocity[i + 1] = v.z
+      velocity[i + 1] = v.y
       velocity[i + 2] = v.z
     }
 
@@ -164,25 +179,6 @@ export default class Snowpuff {
 
   update (delta, elapsed) {
     this.system.material.uniforms.elapsedTime.value = elapsed + this.offset
-  }
-
-  update2 (delta, elapsed) {
-    const vertices = this.system.geometry.vertices
-    const numVertices = vertices.length
-    const speedY = this.speedY * delta
-
-    for (let i = 0; i < numVertices; i++) {
-      const v = vertices[i]
-      v.x += Math.sin(elapsed - i) * 0.001
-      v.z += Math.sin(elapsed - i) * 0.001
-      if (v.y > 0) {
-        v.y -= speedY * Math.random()
-      } else {
-        v.y = this.height
-      }
-    }
-
-    this.system.geometry.verticesNeedUpdate = true
   }
 
   randCenter (v) {

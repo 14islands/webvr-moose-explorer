@@ -95,6 +95,7 @@ export default class Snowfall {
 
     // help THREE place snow on top of transparent objects
     this.system.renderOrder = 1
+    this.system.sortParticles = true
   }
 
   update (delta, elapsed) {

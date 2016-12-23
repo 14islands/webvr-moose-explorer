@@ -5,8 +5,10 @@ import Ground from './ground'
 import Treeline from './treeline'
 import Moose from './moose'
 import Snowfall from './snowfall'
-import Torch from './torch'
 import Hand from './hand'
+
+import Torch from './torch'
+import Snowpuff from './snowpuff'
 
 // load shimmed plugins - access on THREE namespace
 import _OBJLoader from 'OBJLoader' // eslint-disable-line no-unused-vars
@@ -16,6 +18,8 @@ import _ViveController from 'ViveController' // eslint-disable-line no-unused-va
 
 // Import WebVRManager npm module
 import WebVRManager from 'webvr-boilerplate'
+
+const SNOW_HEIGHT = 0.5
 
 const clock = new THREE.Clock()
 const jsonLoader = new THREE.JSONLoader()
@@ -129,7 +133,7 @@ function createLights () {
 
 function createSnowFall () {
   const snowfall = new Snowfall(200000)
-  snowfall.system.position.set(0, 0, 0)
+  snowfall.system.position.set(0, SNOW_HEIGHT, 0)
   scene.add(snowfall.system)
   return snowfall
 }
@@ -152,10 +156,10 @@ function createHands () {
   }
 
   // temp: add stuff to hands
-  const torch = new Torch()
-  torch.position.y = 1.5
-  torch.position.z = -1
-  scene.add(torch)
+  // const torch = new Torch()
+  // torch.position.y = 1.5
+  // torch.position.z = -1
+  // scene.add(torch)
 
   // window.addEventListener('mousedown', () => torch.on())
   // window.addEventListener('mouseup', () => torch.off())
@@ -279,14 +283,20 @@ function init () {
   createLights()
 
   // create user objects
+  ground = new Ground(scene, objectLoader, SNOW_HEIGHT)
   treeline = new Treeline(scene)
-  ground = new Ground(scene, objectLoader)
 
   createHands()
 
   // keep track of objects that need to update
   updateObjects.push(createSnowFall())
   updateObjects.push(new Moose(scene, jsonLoader))
+
+  // debug puff
+  // const puff = new Snowpuff(scene)
+  // puff.system.position.set(0, 0, -2)
+  // scene.add(puff.system)
+  // updateObjects.push(puff)
 }
 
 // Get the HMD, and if we're dealing with something that specifies

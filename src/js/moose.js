@@ -3,7 +3,7 @@ import * as THREE from 'three'
 import Snowpuff from './snowpuff'
 import {randomBetween, randomPick} from './utils/random-util'
 
-const MIN_DISTANCE = 1
+const MIN_DISTANCE = 1.5
 const MAX_DISTANCE = 7
 
 export default class Moose {
@@ -47,7 +47,7 @@ export default class Moose {
         this.mooseWrapper.add(this.moose)
 
         // debug position
-        // this.mooseWrapper.position.set(0, 0, -5)
+        // this.mooseWrapper.position.set(0, 0, -10)
         // this.moose.rotation.y = Math.PI / 2
 
         // add to scene

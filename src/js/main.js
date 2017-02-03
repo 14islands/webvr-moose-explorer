@@ -5,9 +5,9 @@ import Ground from './ground'
 import Treeline from './treeline'
 import Moose from './moose'
 import Snowfall from './snowfall'
+import Torch from './torch'
 import Hand from './hand'
 
-import Torch from './torch'
 import Snowpuff from './snowpuff'
 
 // load shimmed plugins - access on THREE namespace
@@ -35,6 +35,9 @@ let viveController1, viveController2
 let ground // eslint-disable-line no-unused-vars
 let treeline // eslint-disable-line no-unused-vars
 
+const isNight = false
+const bgColor = isNight ? 0x111122 : 0xc6ccff
+
 function createScene () {
   HEIGHT = window.innerHeight
   WIDTH = window.innerWidth
@@ -43,12 +46,13 @@ function createScene () {
   scene = new THREE.Scene()
 
   // Add a fog vrEffect to the scene using similar color as background
-  scene.fog = new THREE.Fog(0xc6ccff, 4, 11)
+  // scene.fog = new THREE.Fog(0xc6ccff, 4, 11)
+  scene.fog = new THREE.FogExp2(bgColor, 0.15)
 
   // Create the camera
   const aspectRatio = WIDTH / HEIGHT
   const fieldOfView = 60
-  const nearPlane = 0.1
+  const nearPlane = 0.05
   const farPlane = 50
   camera = new THREE.PerspectiveCamera(
     fieldOfView,
@@ -61,14 +65,14 @@ function createScene () {
   renderer = new THREE.WebGLRenderer({
     // Allow transparency to show the gradient background
     // we defined in the CSS
-    alpha: true,
+    alpha: false,
     // Activate the anti-aliasing this is less performant,
     // but, as our project is low-poly based, it should be fine :)
     antialias: true
   })
 
   renderer.setPixelRatio(window.devicePixelRatio)
-  renderer.setClearColor(0xc6ccff, 1)
+  renderer.setClearColor(bgColor, 1)
 
   // Define the size of the renderer in this case,
   // it will fill the entire screen
@@ -126,13 +130,16 @@ function createLights () {
 
   // an ambient light modifies the global color of a scene and makes the shadows softer
   const ambientLight = new THREE.AmbientLight(0xffffff, 1.3)
+  if (isNight) {
+    ambientLight.intensity = 0.1
+  }
 
   scene.add(shadowLight)
   scene.add(ambientLight)
 }
 
 function createSnowFall () {
-  const snowfall = new Snowfall(200000)
+  const snowfall = new Snowfall(100000)
   snowfall.system.position.set(0, SNOW_HEIGHT, 0)
   scene.add(snowfall.system)
   return snowfall
@@ -145,6 +152,23 @@ function createHands () {
     viveController1.addEventListener('triggerdown', () => handL.grip())
     viveController1.addEventListener('triggerup', () => handL.release())
     updateObjects.push(handL)
+
+    if (isNight) {
+      // temp: add stuff to hands
+      const torch = new Torch()
+      // torch.position.y = 1.35
+      torch.position.z = 0.04
+      torch.position.y = -0.02
+      torch.rotation.z = -Math.PI / 2
+      torch.rotation.y = Math.PI / 4
+
+      // scene.add(torch)
+
+      handL.add(torch)
+      updateObjects.push(torch)
+      // test rotate hand
+      handL.rotation.z = Math.PI / 4
+    }
   }
 
   if (viveController2) {
@@ -155,11 +179,6 @@ function createHands () {
     updateObjects.push(handR)
   }
 
-  // temp: add stuff to hands
-  // const torch = new Torch()
-  // torch.position.y = 1.5
-  // torch.position.z = -1
-  // scene.add(torch)
 
   // window.addEventListener('mousedown', () => torch.on())
   // window.addEventListener('mouseup', () => torch.off())

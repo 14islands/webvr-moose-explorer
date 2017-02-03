@@ -12,7 +12,6 @@ export default class Snowfall {
     textureLoader.load('/assets/textures/snowflake.png', (texture) => {
       this.texture = texture
       this.system.material.uniforms.texture.value = texture
-      console.log('texture loade', texture)
     })
     this.init()
   }
@@ -23,13 +22,12 @@ export default class Snowfall {
       uniforms: {
         color: { type: 'c', value: new THREE.Color(0xFFFFFF) },
         height: { type: 'f', value: this.height },
-        speedV: { type: 'f', value: 0.3 },
-        speedH: { type: 'f', value: 0.6 },
+        speedV: { type: 'f', value: 0.4 },
+        speedH: { type: 'f', value: 2.0 },
         elapsedTime: { type: 'f', value: 0.0 },
-        radiusX: { type: 'f', value: 0.2 },
-        radiusZ: { type: 'f', value: 0.2 },
+        radius: { type: 'f', value: 0.02 },
         scale: { type: 'f', value: 2.0 },
-        size: { type: 'f', value: 4.0 },
+        size: { type: 'f', value: 3.0 },
         opacity: { type: 'f', value: 0.1 },
         texture: { type: 't', value: null }
       },
@@ -38,16 +36,15 @@ export default class Snowfall {
         uniform float elapsedTime;
         uniform float speedV;
         uniform float speedH;
-        uniform float radiusX;
-        uniform float radiusZ;
+        uniform float radius;
         uniform float scale;
         uniform float size;
         attribute float uniqueness;
         void main() {
           vec3 pos = position;
-          pos.x += cos((elapsedTime - position.z - uniqueness) * speedH) * radiusX;
+          pos.x += cos((elapsedTime - position.z - uniqueness) * speedH) * radius;
           pos.y = mod(position.y - elapsedTime * speedV, height);
-          pos.z += sin((elapsedTime - position.x - uniqueness) * speedH) * radiusZ;
+          pos.z += sin((elapsedTime - position.x - uniqueness) * speedH) * radius;
           vec4 mvPosition = modelViewMatrix * vec4( pos, 1.0 );
           gl_PointSize = size * ( scale / length( mvPosition.xyz ) );
           gl_Position = projectionMatrix * mvPosition;

@@ -30,7 +30,7 @@ export default class Moose {
   load () {
     this.loader.load(
       // resource URL
-      '/assets/models/moose_life.js',
+      'assets/models/moose_life.js',
       // Function when resource is loaded
       (geometry, materials) => {
         this.mesh = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({

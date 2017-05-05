@@ -9,7 +9,7 @@ export default class Snowfall {
     this.depth = depth
 
     var textureLoader = new THREE.TextureLoader()
-    textureLoader.load('/assets/textures/snowflake.png', (texture) => {
+    textureLoader.load('assets/textures/snowflake.png', (texture) => {
       this.texture = texture
       this.system.material.uniforms.texture.value = texture
     })

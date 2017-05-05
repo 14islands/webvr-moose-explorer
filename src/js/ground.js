@@ -3,7 +3,7 @@ import {convertMaterialsToLambert} from './utils/material-util'
 export default class Ground {
 
   constructor (scene, objectLoader, snowHeight) {
-    window.fetch('/assets/models/snowcap.json')
+    window.fetch('assets/models/snowcap.json')
     .then(
       function (response) {
         if (response.status !== 200) {

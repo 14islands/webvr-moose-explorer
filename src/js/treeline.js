@@ -8,7 +8,7 @@ export default class Ground {
     const loader = new THREE.JSONLoader()
     loader.load(
       // resource URL
-      '/assets/models/treeGenericLower.js',
+      'assets/models/treeGenericLower.js',
       // Function when resource is loaded
       function (geometry) {
         const treeMesh = new THREE.Mesh(geometry, new THREE.MeshLambertMaterial({

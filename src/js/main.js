@@ -147,7 +147,7 @@ function createSnowFall () {
 
 function createHands () {
   if (viveController1) {
-    const handL = new Hand(objectLoader, '/assets/models/hands/handsForOculus/handL.json')
+    const handL = new Hand(objectLoader, 'assets/models/hands/handsForOculus/handL.json')
     viveController1.add(handL)
     viveController1.addEventListener('triggerdown', () => handL.grip())
     viveController1.addEventListener('triggerup', () => handL.release())
@@ -172,13 +172,12 @@ function createHands () {
   }
 
   if (viveController2) {
-    const handR = new Hand(objectLoader, '/assets/models/hands/handsForOculus/handR.json')
+    const handR = new Hand(objectLoader, 'assets/models/hands/handsForOculus/handR.json')
     viveController2.add(handR)
     viveController2.addEventListener('triggerdown', () => handR.grip())
     viveController2.addEventListener('triggerup', () => handR.release())
     updateObjects.push(handR)
   }
-
 
   // window.addEventListener('mousedown', () => torch.on())
   // window.addEventListener('mouseup', () => torch.off())

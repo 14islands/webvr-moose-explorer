@@ -35,7 +35,7 @@ let viveController1, viveController2
 let ground // eslint-disable-line no-unused-vars
 let treeline // eslint-disable-line no-unused-vars
 
-const isNight = false
+const isNight = query.isNight
 const bgColor = isNight ? 0x111122 : 0xc6ccff
 
 function createScene () {

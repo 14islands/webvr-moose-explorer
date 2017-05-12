@@ -1,5 +1,7 @@
 import * as THREE from 'three'
 
+const PARTICLE_SIZE = 0.006
+
 export default class Snowfall {
   constructor (numParticles = 1000, height = 10, width = 10, depth = 10) {
     this.numParticles = numParticles
@@ -13,7 +15,19 @@ export default class Snowfall {
       this.texture = texture
       this.system.material.uniforms.texture.value = texture
     })
+    this._size = -1
+    this.setParticleSize()
+    window.addEventListener('resize', x => this.setParticleSize())
     this.init()
+  }
+
+  setParticleSize () {
+    this._size = window.innerHeight * PARTICLE_SIZE * window.devicePixelRatio
+  }
+
+  // depends on viewport size
+  getParticleSize () {
+    return this._size
   }
 
   init () {
@@ -27,7 +41,7 @@ export default class Snowfall {
         elapsedTime: { type: 'f', value: 0.0 },
         radius: { type: 'f', value: 0.02 },
         scale: { type: 'f', value: 2.0 },
-        size: { type: 'f', value: 3.0 },
+        size: { type: 'f', value: this._size },
         opacity: { type: 'f', value: 0.1 },
         texture: { type: 't', value: null }
       },
@@ -97,6 +111,7 @@ export default class Snowfall {
 
   update (delta, elapsed) {
     this.system.material.uniforms.elapsedTime.value = elapsed
+    this.system.material.uniforms.size.value = this.getParticleSize()
   }
 
   randCenter (v) {

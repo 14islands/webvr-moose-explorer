@@ -3,7 +3,7 @@ import * as THREE from 'three'
 import Snowpuff from './snowpuff'
 import {randomBetween, randomPick} from './utils/random-util'
 
-const MIN_DISTANCE = 1.5
+const MIN_DISTANCE = 0.5 // 1.5
 const MAX_DISTANCE = 7
 
 export default class Moose {
@@ -15,7 +15,9 @@ export default class Moose {
 
     this.mooseStart = -20
     this.mooseDistance = 0
-    this.mooseAngle = false
+
+    this.mooseFirstTime = true
+    this.mooseAngle = Math.PI
 
     this.mooseWrapper = undefined
     this.moose = undefined
@@ -87,7 +89,8 @@ export default class Moose {
     const pos = this.mooseStart + this.mooseDistance
 
     // turn around when out of screen
-    if (!this.mooseAngle || pos > Math.abs(this.mooseStart)) {
+    if (this.mooseFirstTime || pos > Math.abs(this.mooseStart)) {
+      this.mooseFirstTime = false
       // turn around at slightly different random angle
       this.mooseAngle += Math.PI + randomBetween(-Math.PI / 8, Math.PI / 8)
       this.mooseDistance = 0

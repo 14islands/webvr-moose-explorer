@@ -13,7 +13,7 @@
     "build:css-prod": "stylus --include-css -c -u autoprefixer-stylus src/css/main.styl -o build/bundle.min.css",
     "build:js-prod": "browserify src/js/main.js -t babelify -g uglifyify | uglifyjs -c > build/bundle.min.js",
     "prebuild": "npm run copy:three && npm run copy:webvr-polyfill && npm run copy:webvr-manager",
-    "prewatch": "npm run copy:three && npm run copy:webvr-polyfill && npm run copy:webvr-manager",
+    "prewatch": "npm run prebuild",
     "build": "npm run build:css-prod -s && npm run build:js-prod -s",
     "watch:js": "watchify src/js/main.js -d -t babelify -o build/bundle.min.js",
     "watch:css": "stylus -w --include-css -m -u autoprefixer-stylus src/css/main.styl -o build/bundle.min.css",
